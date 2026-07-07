@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>UpCycle — Davidson's Fashion Exchange</title>
+<meta name="description" content="Exclusive fashion marketplace for Davidson College students"/>
+<meta http-equiv="X-Content-Type-Options" content="nosniff"/>
+<meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<!-- Portfolio demo version: no Supabase or backend required. -->
+
+<style>
+:root{
+  --navy:#1A2340;--accent:#4A90D9;--accent-light:#6AAEE8;--accent-pale:#E8F0FB;
+  --slate:#8A9BB5;--bg:#F8F9FC;--white:#FFFFFF;--border:#DCE4F0;
+  --text:#1A2340;--muted:#8A9BB5;--success:#3DAB7E;--danger:#E05C5C;
+  --gold:#F59E0B;--green:#3DAB7E;
+  --shadow:0 2px 16px rgba(26,35,64,.08);--shadow-lg:0 8px 40px rgba(26,35,64,.13);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+#ls{position:fixed;inset:0;z-index:3000;background:linear-gradient(135deg,#0d1526,#1A2340);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .4s;}
+#ls.fade{opacity:0;pointer-events:none;}
+.ls-logo{font-family:'Playfair Display',serif;font-size:36px;color:#fff;}
+.ls-sub{color:rgba(255,255,255,.4);font-size:13px;letter-spacing:2px;text-transform:uppercase;}
+.spin{width:32px;height:32px;border:3px solid rgba(255,255,255,.1);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+#gate{position:fixed;inset:0;z-index:2000;background:linear-gradient(135deg,#0d1526 0%,#1A2340 50%,#1e3260 100%);display:none;align-items:center;justify-content:center;overflow:hidden;}
+#gate.on{display:flex;}
+.gwaves{position:absolute;bottom:0;left:0;width:200%;height:200px;animation:wshift 8s linear infinite;}
+.gwaves svg{width:100%;height:100%;}
+@keyframes wshift{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.gcard{position:relative;z-index:2;background:rgba(255,255,255,.07);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.15);border-radius:24px;padding:44px;width:100%;max-width:440px;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.4);max-height:90vh;overflow-y:auto;}
+.glogo{font-family:'Playfair Display',serif;font-size:34px;color:#fff;margin-bottom:4px;}
+.gtag{color:rgba(255,255,255,.45);font-size:12px;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px;}
+.gbadge{display:inline-flex;align-items:center;gap:6px;background:rgba(74,144,217,.2);border:1px solid rgba(74,144,217,.4);color:#6AAEE8;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;border-radius:100px;padding:5px 14px;margin-bottom:24px;}
+.gbadge::before{content:'●';font-size:8px;}
+.gtabs{display:flex;border:1px solid rgba(255,255,255,.15);border-radius:10px;overflow:hidden;margin-bottom:22px;}
+.gtab{flex:1;padding:10px;font-size:14px;font-weight:600;color:rgba(255,255,255,.4);background:transparent;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;}
+.gtab.on{background:rgba(74,144,217,.3);color:#fff;}
+.glabel{display:block;text-align:left;color:rgba(255,255,255,.6);font-size:12px;font-weight:500;margin-bottom:6px;margin-top:12px;}
+.ginput{width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:12px 16px;color:#fff;font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s;}
+.ginput::placeholder{color:rgba(255,255,255,.3);}
+.ginput:focus{border-color:var(--accent);background:rgba(255,255,255,.12);}
+.gerr{color:#f87171;font-size:12px;margin-top:8px;display:none;text-align:left;line-height:1.5;}
+.gok{color:#6ee7b7;font-size:13px;margin-top:8px;display:none;text-align:center;line-height:1.5;}
+.gbtn{margin-top:18px;width:100%;padding:13px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.gbtn:hover{background:var(--accent-light);}
+.gbtn:disabled{opacity:.6;cursor:not-allowed;}
+.gsub{margin-top:14px;color:rgba(255,255,255,.3);font-size:11px;line-height:1.6;}
+.ob-overlay{position:fixed;inset:0;z-index:2500;background:rgba(26,35,64,.6);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px;}
+.ob-overlay.on{display:flex;}
+.ob-card{background:var(--white);border-radius:24px;padding:36px;max-width:540px;width:100%;box-shadow:var(--shadow-lg);max-height:90vh;overflow-y:auto;}
+.ob-step{display:none;}
+.ob-step.on{display:block;}
+.ob-title{font-family:'Playfair Display',serif;font-size:26px;color:var(--navy);margin-bottom:6px;}
+.ob-sub{color:var(--muted);font-size:14px;margin-bottom:24px;}
+.ob-progress{display:flex;gap:6px;margin-bottom:28px;}
+.ob-dot{flex:1;height:4px;border-radius:2px;background:var(--border);}
+.ob-dot.done{background:var(--accent);}
+.chip-grid{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{padding:8px 16px;border:1.5px solid var(--border);border-radius:100px;font-size:13px;font-weight:500;color:var(--slate);cursor:pointer;transition:all .2s;background:var(--white);}
+.chip:hover{border-color:var(--accent);color:var(--accent);}
+.chip.sel{border-color:var(--accent);background:var(--accent-pale);color:var(--accent);}
+.ob-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:'Inter',sans-serif;color:var(--navy);background:var(--bg);outline:none;transition:border-color .2s;margin-bottom:8px;}
+.ob-input:focus{border-color:var(--accent);background:var(--white);}
+.ob-btn{margin-top:24px;width:100%;padding:13px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;}
+.ob-btn:hover{background:var(--accent-light);}
+.ob-skip{display:block;text-align:center;margin-top:10px;color:var(--muted);font-size:13px;cursor:pointer;}
+.ob-skip:hover{color:var(--navy);}
+#app{display:none;min-height:100vh;}
+#app.on{display:block;}
+nav{position:sticky;top:0;z-index:100;background:rgba(248,249,252,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.nav-logo{font-family:'Playfair Display',serif;font-size:22px;color:var(--navy);cursor:pointer;flex-shrink:0;}
+.nav-links{display:flex;gap:2px;flex-wrap:nowrap;}
+.nl{padding:7px 12px;border-radius:8px;font-size:13px;font-weight:500;color:var(--slate);cursor:pointer;transition:color .2s,background .2s;border:none;background:none;white-space:nowrap;}
+.nl:hover{color:var(--navy);background:var(--accent-pale);}
+.nl.on{color:var(--accent);background:var(--accent-pale);}
+.nav-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.nic{position:relative;width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .2s,background .2s;}
+.nic:hover{border-color:var(--accent);background:var(--accent-pale);}
+.nic svg{width:17px;height:17px;stroke:var(--slate);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.nic:hover svg{stroke:var(--accent);}
+.nbadge{position:absolute;top:-5px;right:-5px;background:var(--accent);color:#fff;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:50%;display:none;align-items:center;justify-content:center;border:2px solid var(--bg);}
+.nbadge.on{display:flex;}
+.nav-av{width:34px;height:34px;border-radius:50%;cursor:pointer;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600;overflow:hidden;background:linear-gradient(135deg,var(--accent),#2563eb);flex-shrink:0;transition:border-color .2s;}
+.nav-av:hover{border-color:var(--accent);}
+.nav-av img{width:100%;height:100%;object-fit:cover;}
+.page{display:none;}
+.page.on{display:block;}
+.wrap{max-width:1180px;margin:0 auto;padding:32px;}
+.wrap-sm{max-width:780px;margin:0 auto;padding:32px;}
+.ph2{font-family:'Playfair Display',serif;font-size:28px;color:var(--navy);margin-bottom:6px;}
+.psub{color:var(--muted);font-size:14px;margin-bottom:28px;}
+.card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:24px;}
+.card+.card{margin-top:20px;}
+.section-title{font-size:16px;font-weight:600;color:var(--navy);margin-bottom:16px;}
+.btn{padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;border:none;transition:background .2s,color .2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:var(--accent-light);}
+.btn-navy{background:var(--navy);color:#fff;}
+.btn-navy:hover{background:var(--accent);}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--navy);}
+.btn-outline:hover{border-color:var(--accent);background:var(--accent-pale);}
+.btn-danger{background:transparent;border:1.5px solid var(--danger);color:var(--danger);}
+.btn-danger:hover{background:var(--danger);color:#fff;}
+.btn:disabled{opacity:.55;cursor:not-allowed;}
+.empty{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty svg{width:48px;height:48px;stroke:var(--border);fill:none;stroke-width:1.5;margin:0 auto 12px;display:block;}
+.empty h3{font-size:18px;font-weight:600;color:var(--navy);margin-bottom:6px;}
+.empty p{font-size:13px;line-height:1.6;}
+.hero{padding:70px 24px 50px;max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;}
+.hero-eye{display:inline-flex;align-items:center;gap:6px;background:var(--accent-pale);color:var(--accent);font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;border-radius:100px;padding:5px 14px;margin-bottom:18px;}
+.hero h1{font-family:'Playfair Display',serif;font-size:50px;line-height:1.1;color:var(--navy);margin-bottom:18px;}
+.hero h1 em{color:var(--accent);font-style:normal;}
+.hero p{color:var(--muted);font-size:16px;line-height:1.7;margin-bottom:28px;}
+.hero-btns{display:flex;gap:10px;flex-wrap:wrap;}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.hcard{background:var(--white);border-radius:16px;overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow);transition:transform .3s;}
+.hcard:hover{transform:translateY(-4px);}
+.hcard:nth-child(2){margin-top:20px;}
+.hcard:nth-child(3){margin-top:-10px;}
+.hcimg{height:120px;display:flex;align-items:center;justify-content:center;font-size:44px;}
+.hcbody{padding:12px 14px;}
+.hcname{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:2px;}
+.hcprice{font-size:12px;color:var(--accent);font-weight:600;}
+.hcsub{font-size:11px;color:var(--muted);}
+.stats-bar{background:var(--white);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:24px;display:flex;justify-content:center;}
+.stat{text-align:center;padding:0 40px;border-right:1px solid var(--border);}
+.stat:last-child{border-right:none;}
+.stat-n{font-family:'Playfair Display',serif;font-size:30px;color:var(--navy);}
+.stat-l{font-size:12px;color:var(--muted);margin-top:2px;}
+.how{max-width:1100px;margin:56px auto;padding:0 24px;}
+.step-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.step-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:24px;text-align:center;}
+.step-icon{font-size:32px;margin-bottom:12px;}
+.step-card h3{font-size:15px;font-weight:600;color:var(--navy);margin-bottom:6px;}
+.step-card p{font-size:13px;color:var(--muted);line-height:1.6;}
+.shop-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+.filters{display:flex;gap:6px;flex-wrap:wrap;}
+.fbtn{padding:6px 14px;border-radius:100px;font-size:13px;font-weight:500;border:1.5px solid var(--border);background:var(--white);color:var(--slate);cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif;}
+.fbtn:hover,.fbtn.on{border-color:var(--accent);color:var(--accent);background:var(--accent-pale);}
+.search-wrap{position:relative;margin-bottom:18px;}
+.sicon{position:absolute;left:13px;top:50%;transform:translateY(-50%);}
+.sicon svg{width:15px;height:15px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;}
+.sbar{width:100%;padding:10px 14px 10px 40px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;background:var(--white);outline:none;font-family:'Inter',sans-serif;color:var(--navy);transition:border-color .2s;}
+.sbar:focus{border-color:var(--accent);}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px;}
+.pc{background:var(--white);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:box-shadow .2s,transform .2s;}
+.pc:hover{box-shadow:var(--shadow-lg);transform:translateY(-3px);}
+.pc-img{height:190px;overflow:hidden;position:relative;background:var(--accent-pale);display:flex;align-items:center;justify-content:center;}
+.pc-img img{width:100%;height:100%;object-fit:cover;}
+.pc-ph{font-size:60px;}
+.tbadge{position:absolute;top:9px;left:9px;color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 9px;border-radius:100px;}
+.tbadge.sell{background:var(--navy);}
+.tbadge.rent{background:var(--accent);}
+.tbadge.recycled{background:var(--green);}
+.savebtn{position:absolute;top:9px;right:9px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.92);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s;}
+.savebtn:hover{transform:scale(1.12);}
+.savebtn svg{width:15px;height:15px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s,fill .2s;}
+.savebtn.on svg{stroke:var(--danger);fill:var(--danger);}
+.pc-body{padding:12px 14px;}
+.pc-name{font-size:14px;font-weight:600;color:var(--navy);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pc-seller{font-size:12px;color:var(--muted);margin-bottom:7px;}
+.pc-foot{display:flex;align-items:center;justify-content:space-between;}
+.pc-price{font-size:14px;font-weight:700;color:var(--accent);}
+.pc-cond{font-size:11px;color:var(--muted);background:var(--accent-pale);border-radius:4px;padding:2px 6px;}
+.pc-cartbtn{width:100%;margin-top:9px;padding:8px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:background .2s;}
+.pc-cartbtn:hover{background:var(--accent);}
+.photo-zone{border:2px dashed var(--border);border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;background:var(--bg);position:relative;}
+.photo-zone:hover{border-color:var(--accent);background:var(--accent-pale);}
+.photo-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.pz-icon svg{width:28px;height:28px;stroke:var(--muted);fill:none;stroke-width:1.5;margin:0 auto 8px;display:block;}
+.pz-label{font-size:13px;color:var(--muted);}
+.pz-label strong{color:var(--accent);}
+.thumb-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:10px;}
+.thumb{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;border:1px solid var(--border);}
+.thumb img{width:100%;height:100%;object-fit:cover;}
+.thumb-del{position:absolute;top:3px;right:3px;width:18px;height:18px;background:rgba(0,0,0,.6);border:none;border-radius:50%;cursor:pointer;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fg.full{grid-column:span 2;}
+label{font-size:13px;font-weight:500;color:var(--navy);}
+.fi,.fs,.ft{padding:10px 13px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:'Inter',sans-serif;color:var(--navy);background:var(--bg);outline:none;transition:border-color .2s;}
+.fi:focus,.fs:focus,.ft:focus{border-color:var(--accent);background:var(--white);}
+.ft{resize:vertical;min-height:80px;}
+.type-row{display:flex;gap:8px;}
+.type-opt{flex:1;padding:9px;border:2px solid var(--border);border-radius:10px;text-align:center;cursor:pointer;transition:all .2s;font-size:13px;font-weight:600;color:var(--slate);}
+.type-opt:hover{border-color:var(--accent);color:var(--accent);}
+.type-opt.on{border-color:var(--accent);background:var(--accent-pale);color:var(--accent);}
+.cart-grid{display:grid;grid-template-columns:1fr 320px;gap:24px;}
+.cart-items{display:flex;flex-direction:column;gap:12px;}
+.ci{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;gap:14px;align-items:center;}
+.ci-img{width:66px;height:66px;border-radius:10px;background:var(--accent-pale);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:28px;}
+.ci-img img{width:100%;height:100%;object-fit:cover;}
+.ci-info{flex:1;min-width:0;}
+.ci-name{font-size:14px;font-weight:600;color:var(--navy);margin-bottom:2px;}
+.ci-meta{font-size:12px;color:var(--muted);}
+.ci-price{font-size:14px;font-weight:700;color:var(--accent);margin-top:3px;}
+.ci-rm{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;display:flex;align-items:center;}
+.ci-rm:hover{color:var(--danger);}
+.ci-rm svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;}
+.cart-sum{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:22px;height:fit-content;position:sticky;top:76px;}
+.cart-sum h3{font-size:15px;font-weight:600;color:var(--navy);margin-bottom:18px;}
+.srow{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:9px;}
+.srow.tot{font-weight:700;color:var(--navy);font-size:15px;border-top:1px solid var(--border);padding-top:9px;margin-top:6px;}
+.venmo-box{background:linear-gradient(135deg,#3d9ae8,#008CFF);border-radius:12px;padding:18px;margin-top:16px;color:#fff;}
+.venmo-box h4{font-size:14px;font-weight:700;margin-bottom:6px;}
+.venmo-box p{font-size:12px;opacity:.85;line-height:1.5;margin-bottom:12px;}
+.venmo-link{display:block;text-align:center;padding:9px;background:rgba(255,255,255,.2);border-radius:8px;color:#fff;font-weight:700;font-size:14px;cursor:pointer;border:none;font-family:'Inter',sans-serif;width:100%;}
+.venmo-link:hover{background:rgba(255,255,255,.3);}
+.p-banner{background:linear-gradient(135deg,var(--navy),#1e3260);border-radius:20px;padding:32px;display:flex;align-items:center;gap:24px;color:#fff;margin-bottom:24px;}
+.p-av-wrap{position:relative;flex-shrink:0;}
+.p-av{width:84px;height:84px;border-radius:50%;border:3px solid rgba(255,255,255,.3);background:linear-gradient(135deg,var(--accent),#2563eb);display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700;color:#fff;overflow:hidden;cursor:pointer;}
+.p-av img{width:100%;height:100%;object-fit:cover;}
+.p-av-edit{position:absolute;bottom:0;right:0;width:24px;height:24px;background:var(--accent);border:2px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.p-av-edit svg{width:11px;height:11px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;}
+.p-av-input{display:none;}
+.p-name{font-family:'Playfair Display',serif;font-size:24px;margin-bottom:3px;}
+.p-email{color:rgba(255,255,255,.55);font-size:13px;}
+.p-stats{display:flex;gap:24px;margin-top:14px;}
+.pst{text-align:center;}
+.pst-n{font-size:20px;font-weight:700;}
+.pst-l{font-size:11px;color:rgba(255,255,255,.5);}
+.stars{display:flex;gap:2px;}
+.star{font-size:16px;color:var(--border);}
+.star.on{color:var(--gold);}
+.review-row{padding:14px 0;border-bottom:1px solid var(--border);}
+.review-row:last-child{border-bottom:none;}
+.rr-top{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.rr-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#2563eb);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;overflow:hidden;flex-shrink:0;}
+.rr-av img{width:100%;height:100%;object-fit:cover;}
+.rr-name{font-size:13px;font-weight:600;color:var(--navy);}
+.rr-date{font-size:11px;color:var(--muted);}
+.rr-body{font-size:13px;color:var(--slate);line-height:1.5;}
+.lr{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);}
+.lr:last-child{border-bottom:none;}
+.lr-img{width:48px;height:48px;border-radius:8px;background:var(--accent-pale);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:20px;}
+.lr-img img{width:100%;height:100%;object-fit:cover;}
+.lr-name{font-size:13px;font-weight:600;color:var(--navy);}
+.lr-meta{font-size:12px;color:var(--muted);}
+.lr-price{font-weight:700;color:var(--accent);font-size:13px;margin-left:auto;white-space:nowrap;}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--success);display:inline-block;margin-right:4px;}
+.analytics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.ametric{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px;}
+.ametric-val{font-family:'Playfair Display',serif;font-size:28px;color:var(--navy);}
+.ametric-lbl{font-size:12px;color:var(--muted);margin-top:2px;}
+.msgs-grid{display:grid;grid-template-columns:270px 1fr;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--white);min-height:520px;}
+.thread-list{border-right:1px solid var(--border);overflow-y:auto;}
+.ti{padding:14px;display:flex;gap:10px;align-items:flex-start;cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s;}
+.ti:hover{background:var(--bg);}
+.ti.on{background:var(--accent-pale);}
+.ti-av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#2563eb);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden;}
+.ti-av img{width:100%;height:100%;object-fit:cover;}
+.ti-info{min-width:0;flex:1;}
+.ti-name{font-size:13px;font-weight:600;color:var(--navy);}
+.ti-prev{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.ti-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:4px;}
+.chat-pane{display:flex;flex-direction:column;}
+.chat-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.chat-head-name{font-size:14px;font-weight:600;color:var(--navy);}
+.chat-head-item{font-size:12px;color:var(--muted);}
+.chat-msgs{flex:1;padding:18px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;min-height:300px;max-height:380px;}
+.bub{max-width:68%;padding:9px 13px;border-radius:14px;font-size:14px;line-height:1.5;word-break:break-word;}
+.bub.sent{background:var(--accent);color:#fff;align-self:flex-end;border-bottom-right-radius:4px;}
+.bub.recv{background:var(--bg);color:var(--navy);align-self:flex-start;border-bottom-left-radius:4px;border:1px solid var(--border);}
+.bub.offS{background:linear-gradient(135deg,#1e5c3a,#166534);color:#fff;align-self:flex-end;border-bottom-right-radius:4px;}
+.bub.offR{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #86efac;color:var(--navy);align-self:flex-start;border-bottom-left-radius:4px;}
+.off-lbl{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;opacity:.7;}
+.off-amt{font-size:18px;font-weight:700;}
+.off-sta{font-size:11px;margin-top:5px;opacity:.7;}
+.off-acts{display:flex;gap:6px;margin-top:8px;}
+.off-acc{padding:5px 12px;background:var(--success);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;}
+.off-dec{padding:5px 12px;background:transparent;color:var(--danger);border:1.5px solid var(--danger);border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;}
+.msg-time{font-size:10px;color:var(--muted);margin-top:2px;}
+.msg-time.r{text-align:right;}
+.chat-inp{padding:12px 14px;border-top:1px solid var(--border);display:flex;gap:7px;align-items:center;}
+.cinput{flex:1;padding:9px 13px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:'Inter',sans-serif;color:var(--navy);outline:none;transition:border-color .2s;background:var(--bg);}
+.cinput:focus{border-color:var(--accent);background:var(--white);}
+.csend{width:36px;height:36px;border-radius:9px;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.csend:hover{background:var(--accent-light);}
+.csend svg{width:15px;height:15px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.coff-btn{padding:7px 11px;border:1.5px solid var(--accent);color:var(--accent);background:transparent;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;}
+.chat-empty{display:flex;align-items:center;justify-content:center;flex:1;flex-direction:column;gap:8px;color:var(--muted);padding:40px;}
+.chat-empty svg{width:38px;height:38px;stroke:var(--border);fill:none;stroke-width:1.5;}
+.found-banner{background:linear-gradient(135deg,#0d1526,#1e3260);border-radius:20px;padding:28px;color:#fff;margin-bottom:24px;}
+.found-banner h2{font-family:'Playfair Display',serif;font-size:26px;margin-bottom:4px;}
+.found-badge{display:inline-block;background:rgba(74,144,217,.3);border:1px solid rgba(74,144,217,.5);color:#6AAEE8;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:4px 12px;border-radius:100px;margin-bottom:12px;}
+.fgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.fmetric{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px;position:relative;overflow:hidden;}
+.fmetric::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--accent);}
+.fm-val{font-family:'Playfair Display',serif;font-size:30px;color:var(--navy);}
+.fm-lbl{font-size:12px;color:var(--muted);margin-top:2px;}
+.found-table{width:100%;border-collapse:collapse;font-size:13px;}
+.found-table th{text-align:left;padding:10px 14px;border-bottom:2px solid var(--border);color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.5px;}
+.found-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--navy);}
+.found-table tr:last-child td{border-bottom:none;}
+.found-table tr:hover td{background:var(--bg);}
+.mo{display:none;position:fixed;inset:0;z-index:500;background:rgba(26,35,64,.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;}
+.mo.on{display:flex;}
+.mo-wrap{background:var(--white);border-radius:20px;max-width:680px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow-lg);position:relative;}
+.mo-close{position:sticky;top:0;float:right;margin:12px 12px 0 0;z-index:10;background:var(--bg);border:1px solid var(--border);border-radius:50%;width:30px;height:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.mo-close svg{width:13px;height:13px;stroke:var(--muted);fill:none;stroke-width:2.5;stroke-linecap:round;}
+.mo-body{padding:14px 28px 28px;}
+.mo-sm .mo-wrap{max-width:420px;}
+.mo-img{height:240px;border-radius:14px;overflow:hidden;background:var(--accent-pale);display:flex;align-items:center;justify-content:center;font-size:80px;margin-bottom:16px;}
+.mo-img img{width:100%;height:100%;object-fit:cover;}
+.mo-thumbs{display:flex;gap:5px;margin-bottom:16px;}
+.mo-thumb{width:56px;height:56px;border-radius:7px;overflow:hidden;cursor:pointer;border:2px solid transparent;background:var(--accent-pale);display:flex;align-items:center;justify-content:center;font-size:18px;}
+.mo-thumb img{width:100%;height:100%;object-fit:cover;}
+.mo-thumb.on{border-color:var(--accent);}
+.mo-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--navy);margin-bottom:4px;}
+.mo-seller{font-size:13px;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.mo-desc{font-size:13px;color:var(--slate);line-height:1.7;margin-bottom:16px;}
+.mo-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+.mm{background:var(--bg);border-radius:10px;padding:10px 13px;}
+.mm-l{font-size:11px;color:var(--muted);margin-bottom:1px;}
+.mm-v{font-size:13px;font-weight:600;color:var(--navy);}
+.mo-price{font-size:26px;font-weight:700;color:var(--accent);margin-bottom:16px;}
+.mo-acts{display:flex;gap:8px;flex-wrap:wrap;}
+#offerMo{z-index:600;}
+.off-inner{background:var(--white);border-radius:20px;padding:28px;max-width:400px;width:100%;box-shadow:var(--shadow-lg);}
+.off-inner h3{font-size:17px;font-weight:700;color:var(--navy);margin-bottom:4px;}
+.off-inner p{font-size:13px;color:var(--muted);margin-bottom:18px;}
+.off-iw{display:flex;align-items:center;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px;}
+.off-cur{padding:10px 13px;background:var(--bg);font-size:15px;font-weight:700;color:var(--navy);border-right:1.5px solid var(--border);}
+.off-input{flex:1;padding:10px 13px;border:none;outline:none;font-size:17px;font-weight:700;font-family:'Inter',sans-serif;}
+.off-note{width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'Inter',sans-serif;color:var(--navy);outline:none;resize:none;margin-bottom:14px;}
+.off-note:focus{border-color:var(--accent);}
+#reviewMo{z-index:600;}
+.rev-inner{background:var(--white);border-radius:20px;padding:28px;max-width:440px;width:100%;box-shadow:var(--shadow-lg);}
+.rev-inner h3{font-size:17px;font-weight:700;color:var(--navy);margin-bottom:4px;}
+.rev-inner p{font-size:13px;color:var(--muted);margin-bottom:18px;}
+.star-picker{display:flex;gap:6px;margin-bottom:16px;}
+.star-pick{font-size:28px;cursor:pointer;color:var(--border);transition:color .15s;}
+.star-pick.on{color:var(--gold);}
+#recycleMo{z-index:600;}
+.rec-inner{background:var(--white);border-radius:20px;padding:28px;max-width:460px;width:100%;box-shadow:var(--shadow-lg);}
+.rec-banner{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #86efac;border-radius:12px;padding:14px;margin-bottom:18px;display:flex;gap:10px;align-items:flex-start;}
+.rec-banner p{font-size:13px;color:#166534;line-height:1.5;}
+#venmoPay{z-index:600;}
+.vp-inner{background:var(--white);border-radius:20px;padding:28px;max-width:420px;width:100%;box-shadow:var(--shadow-lg);}
+.vp-inner h3{font-size:17px;font-weight:700;color:var(--navy);margin-bottom:4px;}
+.vp-box{background:linear-gradient(135deg,#3d9ae8,#008CFF);border-radius:14px;padding:20px;text-align:center;color:#fff;margin:18px 0;}
+.vp-handle{font-size:24px;font-weight:700;margin-bottom:6px;}
+.vp-amount{font-size:32px;font-weight:700;margin-bottom:4px;}
+.vp-note{font-size:12px;opacity:.8;}
+#settingsMo .mo-wrap{max-width:560px;}
+.toast{position:fixed;bottom:22px;right:22px;z-index:9999;background:var(--navy);color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;font-weight:500;display:none;align-items:center;gap:8px;box-shadow:var(--shadow-lg);}
+.toast.on{display:flex;animation:tsup .3s ease;}
+@keyframes tsup{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+footer{background:var(--navy);color:rgba(255,255,255,.45);text-align:center;padding:24px;font-size:13px;margin-top:60px;}
+footer span{color:rgba(255,255,255,.7);}
+</style>
+</head>
+<body>
+<div id="ls"><div class="ls-logo">UpCycle</div><div class="spin"></div><div class="ls-sub">Davidson's Fashion Exchange</div></div>
+<div id="gate">
+  <div class="gwaves"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,60 C300,120 900,0 1200,60 L1200,120 L0,120 Z" fill="rgba(74,144,217,.15)"/><path d="M0,80 C400,140 800,20 1200,80 L1200,120 L0,120 Z" fill="rgba(74,144,217,.1)"/></svg></div>
+  <div class="gcard">
+    <div class="glogo">UpCycle</div>
+    <div class="gtag">Davidson's Fashion Exchange</div>
+    <div class="gbadge">Members Only</div>
+    <div class="gtabs">
+      <button class="gtab on" id="t-in" onclick="gTab('in')">Sign In</button>
+      <button class="gtab" id="t-up" onclick="gTab('up')">Create Account</button>
+    </div>
+    <div id="f-in">
+      <label class="glabel">Davidson Email</label>
+      <input class="ginput" id="siEmail" type="email" placeholder="yourname@davidson.edu" autocomplete="email"/>
+      <label class="glabel">Password</label>
+      <input class="ginput" id="siPwd" type="password" placeholder="Your password" autocomplete="current-password"/>
+      <div class="gerr" id="siErr"></div>
+      <button class="gbtn" id="siBtn" onclick="doSignIn()"><span>Sign In</span></button>
+      <div style="margin-top:10px;text-align:center;"><span style="color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;" onclick="doForgotPwd()">Forgot password?</span></div>
+    </div>
+    <div id="f-up" style="display:none">
+      <label class="glabel">Your Name</label>
+      <input class="ginput" id="suName" type="text" placeholder="First Last" autocomplete="name"/>
+      <label class="glabel">Davidson Email</label>
+      <input class="ginput" id="suEmail" type="email" placeholder="yourname@davidson.edu" autocomplete="email"/>
+      <label class="glabel">Password <span style="color:rgba(255,255,255,.3);font-size:11px;">(min 8 characters)</span></label>
+      <input class="ginput" id="suPwd" type="password" placeholder="Create a password" autocomplete="new-password"/>
+      <div class="gerr" id="suErr"></div>
+      <div class="gok" id="suOk"></div>
+      <button class="gbtn" id="suBtn" onclick="doSignUp()"><span>Create Account</span></button>
+    </div>
+    <div class="gsub">Exclusive to Davidson College. @davidson.edu only — enforced server-side.</div>
+  </div>
+</div>
+<div class="ob-overlay" id="obOverlay">
+  <div class="ob-card">
+    <div class="ob-progress" id="obDots"><div class="ob-dot done"></div><div class="ob-dot"></div><div class="ob-dot"></div><div class="ob-dot"></div></div>
+    <div class="ob-step on" id="ob1"><div class="ob-title">Welcome to UpCycle! 👋</div><div class="ob-sub">Let's personalise your experience. What sizes do you typically wear?</div><div class="chip-grid" id="obSizes"><div class="chip" onclick="toggleChip(this,'sizes')">XS</div><div class="chip" onclick="toggleChip(this,'sizes')">S</div><div class="chip" onclick="toggleChip(this,'sizes')">M</div><div class="chip" onclick="toggleChip(this,'sizes')">L</div><div class="chip" onclick="toggleChip(this,'sizes')">XL</div><div class="chip" onclick="toggleChip(this,'sizes')">One Size</div></div><button class="ob-btn" onclick="obNext(2)">Next →</button><span class="ob-skip" onclick="skipOb()">Skip for now</span></div>
+    <div class="ob-step" id="ob2"><div class="ob-title">What are you looking for? 🛍️</div><div class="ob-sub">Select all categories you're interested in.</div><div class="chip-grid" id="obCats"><div class="chip" onclick="toggleChip(this,'cats')">Tops</div><div class="chip" onclick="toggleChip(this,'cats')">Bottoms</div><div class="chip" onclick="toggleChip(this,'cats')">Dresses</div><div class="chip" onclick="toggleChip(this,'cats')">Outerwear</div><div class="chip" onclick="toggleChip(this,'cats')">Shoes</div><div class="chip" onclick="toggleChip(this,'cats')">Accessories</div></div><button class="ob-btn" onclick="obNext(3)">Next →</button><span class="ob-skip" onclick="skipOb()">Skip</span></div>
+    <div class="ob-step" id="ob3"><div class="ob-title">Favourite Brands? 🏷️</div><div class="ob-sub">Pick any you love — or type your own.</div><div class="chip-grid" id="obBrands"><div class="chip" onclick="toggleChip(this,'brands')">Levi's</div><div class="chip" onclick="toggleChip(this,'brands')">Nike</div><div class="chip" onclick="toggleChip(this,'brands')">Zara</div><div class="chip" onclick="toggleChip(this,'brands')">H&amp;M</div><div class="chip" onclick="toggleChip(this,'brands')">Vintage</div><div class="chip" onclick="toggleChip(this,'brands')">Patagonia</div><div class="chip" onclick="toggleChip(this,'brands')">Adidas</div><div class="chip" onclick="toggleChip(this,'brands')">Urban Outfitters</div><div class="chip" onclick="toggleChip(this,'brands')">Thrifted</div><div class="chip" onclick="toggleChip(this,'brands')">Free People</div></div><input class="ob-input" id="obBrandCustom" placeholder="Type a brand and press Enter…" onkeydown="addCustomBrand(event)"/><button class="ob-btn" onclick="obNext(4)">Next →</button><span class="ob-skip" onclick="skipOb()">Skip</span></div>
+    <div class="ob-step" id="ob4"><div class="ob-title">Your Venmo handle 💸</div><div class="ob-sub">So buyers can pay you directly. Update anytime in Settings.</div><label class="glabel" style="color:var(--navy);">Venmo username</label><input class="ob-input" id="obVenmo" type="text" placeholder="@yourvenmo"/><button class="ob-btn" onclick="saveOnboarding()">Let's Go →</button><span class="ob-skip" onclick="skipOb()">Skip</span></div>
+  </div>
+</div>
+<div id="app">
+<nav>
+  <div class="nav-logo" onclick="go('landing')">UpCycle</div>
+  <div class="nav-links">
+    <button class="nl on" id="nl-landing" onclick="go('landing')">Home</button>
+    <button class="nl" id="nl-shop" onclick="go('shop')">Shop</button>
+    <button class="nl" id="nl-sell" onclick="go('sell')">Sell / Rent</button>
+    <button class="nl" id="nl-saved" onclick="go('saved')">Saved</button>
+    <button class="nl" id="nl-messages" onclick="go('messages')">Messages</button>
+    <button class="nl" id="nl-analytics" onclick="go('analytics')" style="display:none">My Stats</button>
+    <button class="nl" id="nl-founder" onclick="go('founder')" style="display:none;color:#F59E0B;">⚡ Dashboard</button>
+  </div>
+  <div class="nav-right">
+    <div class="nic" onclick="go('saved')" title="Saved"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span class="nbadge" id="sBadge"></span></div>
+    <div class="nic" onclick="go('cart')" title="Cart"><svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg><span class="nbadge" id="cBadge"></span></div>
+    <div class="nic" onclick="go('messages')" title="Messages"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="nbadge" id="mBadge"></span></div>
+    <div class="nav-av" id="navAv" onclick="go('profile')"></div>
+  </div>
+</nav>
+<div class="page on" id="page-landing">
+  <div class="hero">
+    <div>
+      <div class="hero-eye">Davidson College Exclusive</div>
+      <h1>Sustainable Style <em>Starts Here</em></h1>
+      <p>Buy, sell, and rent pre-loved fashion within the Davidson community. Pay peer-to-peer via Venmo — fast, safe, zero fees.</p>
+      <div class="hero-btns"><button class="btn btn-primary" onclick="go('shop')">Browse the Market</button><button class="btn btn-outline" onclick="go('sell')">List an Item</button></div>
+    </div>
+    <div class="hero-grid">
+      <div class="hcard"><div class="hcimg" style="background:#EEF3FC">👗</div><div class="hcbody"><div class="hcname">Vintage Wrap Dress</div><div class="hcprice">$28</div><div class="hcsub">Size M · Excellent</div></div></div>
+      <div class="hcard"><div class="hcimg" style="background:#F0F4FF">🧥</div><div class="hcbody"><div class="hcname">Wool Peacoat</div><div class="hcprice">$12/day</div><div class="hcsub">Size L · Rent</div></div></div>
+      <div class="hcard"><div class="hcimg" style="background:#EDF6FF">👟</div><div class="hcbody"><div class="hcname">Nike Air Force 1</div><div class="hcprice">$45</div><div class="hcsub">Size 9 · Good</div></div></div>
+      <div class="hcard"><div class="hcimg" style="background:#EFF4FB">👜</div><div class="hcbody"><div class="hcname">Coach Crossbody</div><div class="hcprice">$55</div><div class="hcsub">One size · Like New</div></div></div>
+    </div>
+  </div>
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-n" id="sListings">—</div><div class="stat-l">Active Listings</div></div>
+    <div class="stat"><div class="stat-n" id="sMembers">—</div><div class="stat-l">Davidson Members</div></div>
+    <div class="stat"><div class="stat-n">Venmo</div><div class="stat-l">Direct Payments</div></div>
+    <div class="stat"><div class="stat-n">♻</div><div class="stat-l">ReCycle Ready</div></div>
+  </div>
+  <div class="how">
+    <div style="text-align:center;margin-bottom:32px;"><div class="ph2">How It Works</div><div class="psub">Three steps to a more sustainable wardrobe</div></div>
+    <div class="step-grid">
+      <div class="step-card"><div class="step-icon">📸</div><h3>List Your Pieces</h3><p>Upload photos, set a price, and choose to sell or rent. Live immediately to Davidson.</p></div>
+      <div class="step-card"><div class="step-icon">🤝</div><h3>Negotiate &amp; Pay via Venmo</h3><p>Message, make offers, and settle the price. Then pay directly on Venmo — zero platform fees.</p></div>
+      <div class="step-card"><div class="step-icon">♻️</div><h3>ReCycle It</h3><p>Changed your mind? One tap re-lists your purchase using the original photos and info.</p></div>
+    </div>
+  </div>
+</div>
+<div class="page" id="page-shop">
+  <div class="wrap">
+    <div class="shop-top"><div class="ph2">Marketplace</div><div class="filters"><button class="fbtn on" onclick="filt('all',this)">All</button><button class="fbtn" onclick="filt('sell',this)">For Sale</button><button class="fbtn" onclick="filt('rent',this)">For Rent</button><button class="fbtn" onclick="filt('tops',this)">Tops</button><button class="fbtn" onclick="filt('bottoms',this)">Bottoms</button><button class="fbtn" onclick="filt('shoes',this)">Shoes</button><button class="fbtn" onclick="filt('accessories',this)">Accessories</button></div></div>
+    <div class="search-wrap"><span class="sicon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><input class="sbar" id="searchQ" type="text" placeholder="Search items, brands, sizes…" oninput="renderShop()"/></div>
+    <div class="pgrid" id="shopGrid"><div style="color:var(--muted);padding:40px;text-align:center;grid-column:1/-1">Loading…</div></div>
+  </div>
+</div>
+<div class="page" id="page-saved">
+  <div class="wrap"><div class="ph2">Saved Items</div><div class="psub">Items you've hearted — tap to revisit.</div><div class="pgrid" id="savedGrid"></div><div class="empty" id="savedEmpty"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><h3>Nothing saved yet</h3><p>Tap the heart on any listing.</p></div></div>
+</div>
+<div class="page" id="page-cart"><div class="wrap-sm"><div class="ph2">Your Cart</div><div id="cartBody"></div></div></div>
+<div class="page" id="page-sell">
+  <div class="wrap-sm">
+    <div class="ph2">List an Item</div><div class="psub">Upload photos and set your price — live immediately to Davidson.</div>
+    <div class="card">
+      <div style="margin-bottom:16px;"><label>Photos <span style="color:var(--muted);font-weight:400;">(up to 4)</span></label><div class="photo-zone" style="margin-top:6px;"><input type="file" accept="image/*" multiple id="photoIn" onchange="onPhotos(event)"/><div class="pz-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><div class="pz-label"><strong>Click to upload</strong> or drag here</div></div><div class="thumb-grid" id="thumbGrid" style="display:none"></div></div>
+      <div class="form-grid">
+        <div class="fg full"><label>Listing Type</label><div class="type-row"><div class="type-opt on" id="typeS" onclick="selType('sell')">🏷️ Sell</div><div class="type-opt" id="typeR" onclick="selType('rent')">📅 Rent</div></div></div>
+        <div class="fg full"><label>Item Name</label><input class="fi" id="lName" placeholder="e.g. Vintage Levi's 501 Jeans"/></div>
+        <div class="fg"><label>Category</label><select class="fs" id="lCat"><option value="tops">Tops</option><option value="bottoms">Bottoms</option><option value="dresses">Dresses</option><option value="outerwear">Outerwear</option><option value="shoes">Shoes</option><option value="accessories">Accessories</option></select></div>
+        <div class="fg"><label>Size</label><select class="fs" id="lSize"><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>One Size</option></select></div>
+        <div class="fg"><label>Price ($)</label><input class="fi" id="lPrice" type="number" placeholder="0.00" min="0"/></div>
+        <div class="fg"><label>Condition</label><select class="fs" id="lCond"><option>Like New</option><option>Excellent</option><option>Good</option><option>Fair</option></select></div>
+        <div class="fg full"><label>Description</label><textarea class="ft" id="lDesc" placeholder="Brand, fit notes, any flaws…"></textarea></div>
+      </div>
+      <button class="btn btn-navy" id="submitBtn" onclick="submitListing()" style="width:100%;margin-top:20px;padding:13px;font-size:15px;justify-content:center;"><span>Publish Listing →</span></button>
+    </div>
+  </div>
+</div>
+<div class="page" id="page-messages">
+  <div class="wrap"><div class="ph2">Messages</div><div class="msgs-grid"><div class="thread-list" id="threadList"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">Loading…</div></div><div class="chat-pane" id="chatPane"><div class="chat-empty"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><p>Select a conversation</p></div></div></div></div>
+</div>
+<div class="page" id="page-profile">
+  <div class="wrap">
+    <div class="p-banner">
+      <div class="p-av-wrap"><div class="p-av" id="pAv" onclick="document.getElementById('picIn').click()"></div><div class="p-av-edit" onclick="document.getElementById('picIn').click()"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div><input type="file" accept="image/*" id="picIn" class="p-av-input" onchange="onProfilePic(event)"/></div>
+      <div><div class="p-name" id="pName">—</div><div class="p-email" id="pEmail">—</div><div style="margin-top:8px;" id="pStars"></div><div class="p-stats"><div class="pst"><div class="pst-n" id="pstL">0</div><div class="pst-l">Listings</div></div><div class="pst"><div class="pst-n" id="pstS">0</div><div class="pst-l">Sales</div></div><div class="pst"><div class="pst-n" id="pstR">0</div><div class="pst-l">Reviews</div></div><div class="pst"><div class="pst-n" id="pstEarned">$0</div><div class="pst-l">Earned</div></div></div></div>
+    </div>
+    <div class="card"><div class="section-title">My Active Listings</div><div id="myListingsEl"></div></div>
+    <div class="card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;"><div class="section-title" style="margin:0;display:flex;align-items:center;gap:8px;"><span style="background:#dcfce7;color:#166534;font-size:11px;font-weight:700;padding:2px 7px;border-radius:5px;">ReCycle</span>My Purchases</div></div><div id="myPurchasesEl"></div></div>
+    <div class="card"><div class="section-title">Reviews I've Received</div><div id="myReviewsEl"></div></div>
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0;"><div class="section-title" style="margin:0;">Account Settings</div><button class="btn btn-outline" style="font-size:13px;" onclick="openSettings()">Edit Settings</button></div>
+      <div style="margin-top:16px;display:flex;flex-direction:column;gap:0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);"><div><div style="font-size:14px;font-weight:500;">Email</div><div style="font-size:13px;color:var(--muted);" id="settEmail">—</div></div><span style="font-size:12px;color:var(--success);font-weight:600;">✓ Verified</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);"><div><div style="font-size:14px;font-weight:500;">Venmo</div><div style="font-size:13px;color:var(--muted);" id="settVenmo">Not set</div></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;"><div><div style="font-size:14px;font-weight:500;">Membership</div><div style="font-size:13px;color:var(--muted);">Davidson College Student</div></div><span style="font-size:12px;background:var(--accent-pale);color:var(--accent);padding:3px 9px;border-radius:100px;font-weight:600;">Active</span></div>
+        <button onclick="doSignOut()" class="btn btn-danger" style="margin-top:8px;justify-content:flex-start;">Sign Out</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="page" id="page-analytics">
+  <div class="wrap"><div class="ph2">My Performance</div><div class="psub">How your listings are doing — updated in real time.</div>
+    <div class="analytics-grid"><div class="ametric"><div class="ametric-val" id="aViews">—</div><div class="ametric-lbl">Total Listing Views</div></div><div class="ametric"><div class="ametric-val" id="aSales">—</div><div class="ametric-lbl">Confirmed Sales</div></div><div class="ametric"><div class="ametric-val" id="aEarned">—</div><div class="ametric-lbl">Total Earned ($)</div></div><div class="ametric"><div class="ametric-val" id="aRating">—</div><div class="ametric-lbl">Avg Star Rating</div></div></div>
+    <div class="card"><div class="section-title">Views Per Listing</div><div id="aTable"><div style="color:var(--muted);font-size:14px;text-align:center;padding:24px;">Loading…</div></div></div>
+  </div>
+</div>
+<div class="page" id="page-founder">
+  <div class="wrap">
+    <div class="found-banner"><div class="found-badge">⚡ Founder Access</div><h2 style="font-family:'Playfair Display',serif;font-size:26px;margin-bottom:4px;">Platform Dashboard</h2><div style="font-size:13px;opacity:.6;">Live UpCycle metrics — visible only to you</div></div>
+    <div class="fgrid"><div class="fmetric"><div class="fm-val" id="fUsers">—</div><div class="fm-lbl">Total Members</div></div><div class="fmetric"><div class="fm-val" id="fListings">—</div><div class="fm-lbl">Active Listings</div></div><div class="fmetric"><div class="fm-val" id="fTxns">—</div><div class="fm-lbl">Confirmed Transactions</div></div><div class="fmetric"><div class="fm-val" id="fGMV">—</div><div class="fm-lbl">Gross Value Exchanged ($)</div></div></div>
+    <div class="card"><div class="section-title">Recent Transactions</div><div id="fTxnTable"><div style="color:var(--muted);font-size:14px;text-align:center;padding:24px;">Loading…</div></div></div>
+    <div class="card" style="margin-top:0;"><div class="section-title">Daily Snapshot History</div><div id="fSnapTable"><div style="color:var(--muted);font-size:14px;text-align:center;padding:24px;">Loading…</div></div></div>
+    <div style="text-align:right;margin-top:12px;"><button class="btn btn-outline" onclick="snapshotNow()">📸 Take Snapshot Now</button></div>
+  </div>
+</div>
+<footer><span>UpCycle</span> — Exclusive to Davidson College · Peer-to-peer via Venmo · Portfolio demo</footer>
+</div>
+<!-- MODALS -->
+<div class="mo" id="prodMo" onclick="bgClose(event,'prodMo')"><div class="mo-wrap"><button class="mo-close" onclick="closeMo('prodMo')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="mo-body" id="prodBody"></div></div></div>
+<div class="mo mo-sm" id="offerMo" onclick="bgClose(event,'offerMo')"><div class="off-inner"><h3>Make an Offer</h3><p id="offerSub">Propose a price — negotiate in Messages.</p><div class="off-iw"><span class="off-cur">$</span><input class="off-input" id="offAmt" type="number" placeholder="0" min="1"/></div><textarea class="off-note" id="offNote" rows="2" placeholder="Add a note (optional)…"></textarea><button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;" onclick="submitOffer()">Send Offer →</button><button class="btn btn-outline" style="width:100%;margin-top:8px;justify-content:center;" onclick="closeMo('offerMo')">Cancel</button></div></div>
+<div class="mo mo-sm" id="venmoPay" onclick="bgClose(event,'venmoPay')"><div class="vp-inner"><h3>Pay via Venmo 💸</h3><p style="font-size:13px;color:var(--muted);margin-top:4px;">Payments are between you and the seller directly — UpCycle takes no cut.</p><div class="vp-box"><div class="vp-handle" id="vpHandle">@seller</div><div class="vp-amount" id="vpAmount">$0</div><div class="vp-note" id="vpNote">UpCycle purchase</div></div><ol style="font-size:13px;color:var(--slate);line-height:1.9;margin-bottom:18px;padding-left:18px;"><li>Open Venmo and search for the handle above</li><li>Send the exact amount shown</li><li>Note the item name in the payment</li><li>Return here and click I've Paid</li></ol><a id="venmoDeepLink" href="#" target="_blank" class="btn btn-primary" style="display:flex;justify-content:center;margin-bottom:8px;text-decoration:none;">Open Venmo App</a><button class="btn btn-navy" style="width:100%;justify-content:center;padding:12px;" onclick="confirmVenmoPayment()">✓ I've Paid — Mark as Confirmed</button><button class="btn btn-outline" style="width:100%;margin-top:8px;justify-content:center;" onclick="closeMo('venmoPay')">Cancel</button></div></div>
+<div class="mo mo-sm" id="reviewMo" onclick="bgClose(event,'reviewMo')"><div class="rev-inner"><h3>Leave a Review</h3><p id="revSub">Rate your experience with this seller.</p><div class="star-picker" id="starPicker"><span class="star-pick" onclick="setStar(1)">★</span><span class="star-pick" onclick="setStar(2)">★</span><span class="star-pick" onclick="setStar(3)">★</span><span class="star-pick" onclick="setStar(4)">★</span><span class="star-pick" onclick="setStar(5)">★</span></div><textarea class="off-note" id="revBody" rows="3" placeholder="Share your experience (optional)…"></textarea><button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;" onclick="submitReview()">Post Review</button><button class="btn btn-outline" style="width:100%;margin-top:8px;justify-content:center;" onclick="closeMo('reviewMo')">Cancel</button></div></div>
+<div class="mo mo-sm" id="recycleMo" onclick="bgClose(event,'recycleMo')"><div class="rec-inner"><div class="rec-banner"><div style="font-size:24px;">♻️</div><p><strong>ReCycle this item?</strong><br>Original photos, description, and details will be reused. Just set your new price.</p></div><div id="recPreview"></div><div class="fg" style="margin-top:14px;margin-bottom:14px;"><label>Your asking price ($)</label><input class="fi" id="recPrice" type="number" placeholder="0.00" min="0"/></div><button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;" onclick="confirmRecycle()">List for Sale →</button><button class="btn btn-outline" style="width:100%;margin-top:8px;justify-content:center;" onclick="closeMo('recycleMo')">Cancel</button></div></div>
+<div class="mo" id="settingsMo" onclick="bgClose(event,'settingsMo')"><div class="mo-wrap" style="max-width:560px;"><button class="mo-close" onclick="closeMo('settingsMo')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="mo-body"><div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--navy);margin-bottom:4px;">Settings &amp; Preferences</div><div style="color:var(--muted);font-size:13px;margin-bottom:24px;">Update your preferences, Venmo handle, and display name anytime.</div><div class="form-grid"><div class="fg full"><label>Display Name</label><input class="fi" id="setName" placeholder="Your name"/></div><div class="fg full"><label>Venmo Handle</label><input class="fi" id="setVenmo" placeholder="@yourvenmo"/></div></div><div style="margin-top:20px;"><label style="display:block;margin-bottom:10px;">My Sizes</label><div class="chip-grid" id="setPrefSizes"></div></div><div style="margin-top:16px;"><label style="display:block;margin-bottom:10px;">Categories I Love</label><div class="chip-grid" id="setPrefCats"></div></div><div style="margin-top:16px;"><label style="display:block;margin-bottom:10px;">Favourite Brands</label><div class="chip-grid" id="setPrefBrands"></div></div><button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;margin-top:24px;" onclick="saveSettings()">Save Changes</button></div></div></div>
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+<script>
+// UpCycle portfolio demo — self-contained front-end prototype for GitHub Pages.
+// No Supabase, database, or login required.
+function san(str){return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+const PH={tops:'👕',bottoms:'👖',dresses:'👗',outerwear:'🧥',shoes:'👟',accessories:'👜'};
+let CU={id:'demo-user',email:'mali@davidson.edu'};
+let CP={name:'Mali White',avatar_url:'',venmo_handle:'@maliwhite',is_founder:true,preferences:{sizes:['S','M'],cats:['Dresses','Tops','Accessories'],brands:['Vintage','Nike','Free People']}};
+let listings=[
+ {id:'l1',seller_id:'u2',name:'Vintage Wrap Dress',description:'Great for formals, dinners, or date functions. Flowy fit and barely worn.',type:'sell',category:'dresses',size:'M',price:28,condition:'Excellent',photos:[],view_count:43,created_at:'2026-06-28',profiles:{name:'Emma R.',venmo_handle:'@emma-r'}},
+ {id:'l2',seller_id:'u3',name:'Wool Peacoat',description:'Warm navy coat available to rent for interviews or formal events.',type:'rent',category:'outerwear',size:'L',price:12,condition:'Like New',photos:[],view_count:31,created_at:'2026-06-30',profiles:{name:'Claire M.',venmo_handle:'@clairem'}},
+ {id:'l3',seller_id:'u4',name:'Nike Air Force 1',description:'Classic white sneakers. Some wear but still in good shape.',type:'sell',category:'shoes',size:'9',price:45,condition:'Good',photos:[],view_count:57,created_at:'2026-07-01',profiles:{name:'Sofia L.',venmo_handle:'@sofial'}},
+ {id:'l4',seller_id:'u5',name:'Coach Crossbody Bag',description:'Neutral color, fits phone/card wallet/keys. Perfect for gameday or dinner.',type:'sell',category:'accessories',size:'One Size',price:55,condition:'Like New',photos:[],view_count:65,created_at:'2026-07-03',profiles:{name:'Avery K.',venmo_handle:'@averyk'}},
+ {id:'l5',seller_id:'demo-user',name:'Free People Knit Top',description:'Soft cream knit top, cropped fit. Listing shown as yours in the demo.',type:'sell',category:'tops',size:'S',price:22,condition:'Excellent',photos:[],view_count:24,created_at:'2026-07-05',profiles:{name:'Mali White',venmo_handle:'@maliwhite'}},
+ {id:'l6',seller_id:'u6',name:'Levi\'s 501 Jeans',description:'Straight-leg vintage Levi\'s. Great everyday pair.',type:'sell',category:'bottoms',size:'M',price:38,condition:'Good',photos:[],view_count:39,created_at:'2026-07-06',profiles:{name:'Jordan P.',venmo_handle:'@jordanp'}}
+];
+let savedIds=new Set(['l1','l4']);
+let cart=[];
+let purchases=[{id:'p1',listing_id:'l2',seller_id:'u3',amount:12,created_at:'2026-07-02',listings:{...listings[1],profiles:{name:'Claire M.',venmo_handle:'@clairem'}}}];
+let reviews=[{seller_id:'demo-user',reviewer:'Emma R.',rating:5,body:'Super easy pickup and great communication.',created_at:'2026-07-01'}];
+let messages=[{id:'m1',listing_id:'l1',otherId:'u2',from:'Emma R.',body:'Hi! Is the wrap dress still available?',sent:false,created_at:'10:12 AM'},{id:'m2',listing_id:'l1',otherId:'u2',from:'You',body:'Yes! I can meet near Commons later today.',sent:true,created_at:'10:20 AM'}];
+let cfilt='all', selTypeVal='sell', stagePics=[], modalListing=null, offerTarget=null, recycleTarget=null, reviewTarget=null, reviewStar=0, venmoPayTarget=null, activeThread=null;
+let obPrefs={sizes:[],cats:[],brands:[]};
+
+window.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>{hideLs();document.getElementById('gate').classList.remove('on');document.getElementById('app').classList.add('on');bootDemo();},350);});
+function bootDemo(){updateProfileUI();renderShop();renderSaved();renderCart();renderProfile();loadStats();updateBadges();loadMessages();loadAnalytics();loadFounder();}
+function hideLs(){const ls=document.getElementById('ls'); if(ls){ls.classList.add('fade'); setTimeout(()=>ls.style.display='none',400);}}
+
+function gTab(mode){document.getElementById('t-in')?.classList.toggle('on',mode==='in');document.getElementById('t-up')?.classList.toggle('on',mode==='up');document.getElementById('f-in').style.display=mode==='in'?'block':'none';document.getElementById('f-up').style.display=mode==='up'?'block':'none';}
+function doSignIn(){document.getElementById('gate').classList.remove('on');document.getElementById('app').classList.add('on');toast('Demo mode: signed in automatically.');}
+function doSignUp(){doSignIn();}
+function doForgotPwd(){toast('Demo mode: password reset is disabled.');}
+function doSignOut(){toast('Demo mode stays open for recruiters.');go('landing');}
+
+function go(pg){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.getElementById('page-'+pg)?.classList.add('on');document.querySelectorAll('.nl').forEach(n=>n.classList.remove('on'));document.getElementById('nl-'+pg)?.classList.add('on'); if(pg==='shop')renderShop(); if(pg==='saved')renderSaved(); if(pg==='cart')renderCart(); if(pg==='profile')renderProfile(); if(pg==='messages')loadMessages(); if(pg==='analytics')loadAnalytics(); if(pg==='founder')loadFounder(); window.scrollTo({top:0,behavior:'smooth'});}
+function updateProfileUI(){const initials=(CP.name||'M W').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();['navAv','pAv'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=initials;});document.getElementById('nl-founder').style.display='inline-flex';document.getElementById('nl-analytics').style.display='inline-flex';}
+
+function imgHTML(p,cls='pc-ph'){return p.photos?.[0]?`<img src="${p.photos[0]}" alt="${san(p.name)}">`:`<div class="${cls}">${PH[p.category]||'👚'}</div>`;}
+function itemCard(p){return `<div class="pc" onclick="openProd('${p.id}')"><div class="pc-img">${imgHTML(p)}<span class="tbadge ${p.type}">${p.type==='rent'?'Rent':'Sale'}</span><button class="savebtn ${savedIds.has(p.id)?'on':''}" onclick="toggleSave(event,'${p.id}')"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button></div><div class="pc-body"><div class="pc-name">${san(p.name)}</div><div class="pc-seller">${san(p.profiles?.name||'Davidson Seller')}</div><div class="pc-foot"><span class="pc-price">$${p.price}${p.type==='rent'?'/day':''}</span><span class="pc-cond">${san(p.condition)}</span></div><button class="pc-cartbtn" onclick="addToCart(event,'${p.id}')">Add to Cart</button></div></div>`;}
+function filteredListings(){let q=(document.getElementById('searchQ')?.value||'').toLowerCase();return listings.filter(p=>{let f=cfilt==='all'||p.type===cfilt||p.category===cfilt;let s=!q||[p.name,p.description,p.category,p.size,p.condition,p.profiles?.name].join(' ').toLowerCase().includes(q);return f&&s;});}
+function renderShop(){const el=document.getElementById('shopGrid'); if(!el)return; const items=filteredListings(); el.innerHTML=items.length?items.map(itemCard).join(''):'<div class="empty" style="grid-column:1/-1"><h3>No listings found</h3><p>Try another filter or search.</p></div>';}
+function filt(f,btn){cfilt=f;document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));btn?.classList.add('on');renderShop();}
+function toggleSave(e,id){e?.stopPropagation();savedIds.has(id)?savedIds.delete(id):savedIds.add(id);renderShop();renderSaved();updateBadges();toast(savedIds.has(id)?'Saved item.':'Removed from saved.');}
+function renderSaved(){const grid=document.getElementById('savedGrid'), emp=document.getElementById('savedEmpty'); if(!grid)return; const items=listings.filter(p=>savedIds.has(p.id)); grid.innerHTML=items.map(itemCard).join(''); emp.style.display=items.length?'none':'block';}
+function addToCart(e,id){e?.stopPropagation();const p=listings.find(x=>x.id===id); if(!p)return; if(!cart.find(i=>i.listing_id===id))cart.push({id:'c'+Date.now(),listing_id:id,qty:1,listings:p});updateBadges();renderCart();toast('Added to cart.');}
+function removeFromCart(id){cart=cart.filter(i=>i.id!==id);updateBadges();renderCart();}
+function renderCart(){const el=document.getElementById('cartBody'); if(!el)return; if(!cart.length){el.innerHTML='<div class="empty"><h3>Your cart is empty</h3><p>Browse the marketplace and add an item.</p></div>';return;}let total=cart.reduce((s,i)=>s+Number(i.listings.price),0);el.innerHTML=`<div class="cart-grid"><div class="cart-items">${cart.map(i=>`<div class="ci"><div class="ci-img">${imgHTML(i.listings,'')}</div><div class="ci-info"><div class="ci-name">${san(i.listings.name)}</div><div class="ci-meta">Seller: ${san(i.listings.profiles?.name)}</div><div class="ci-price">$${i.listings.price}${i.listings.type==='rent'?'/day':''}</div></div><button class="ci-rm" onclick="removeFromCart('${i.id}')">Remove</button></div>`).join('')}</div><div class="cart-sum"><h3>Order Summary</h3><div class="srow"><span>Subtotal</span><span>$${total.toFixed(2)}</span></div><div class="srow"><span>Platform fee</span><span>$0</span></div><div class="srow tot"><span>Total</span><span>$${total.toFixed(2)}</span></div><div class="venmo-box"><h4>Pay peer-to-peer</h4><p>Demo checkout shows how Venmo payment instructions would work.</p><button class="venmo-link" onclick="startVenmoPayment()">Continue to Venmo</button></div></div></div>`;}
+
+function openProd(id){const p=listings.find(x=>x.id===id); if(!p)return; modalListing=p; document.getElementById('prodBody').innerHTML=`<div class="mo-img">${imgHTML(p,'')}</div><div class="mo-title">${san(p.name)}</div><div class="mo-seller">Listed by ${san(p.profiles?.name||'Davidson Seller')}</div><div class="mo-desc">${san(p.description)}</div><div class="mo-meta"><div class="mm"><div class="mm-l">Size</div><div class="mm-v">${san(p.size)}</div></div><div class="mm"><div class="mm-l">Condition</div><div class="mm-v">${san(p.condition)}</div></div><div class="mm"><div class="mm-l">Category</div><div class="mm-v">${san(p.category)}</div></div><div class="mm"><div class="mm-l">Type</div><div class="mm-v">${p.type==='rent'?'Rent':'Sale'}</div></div></div><div class="mo-price">$${p.price}${p.type==='rent'?'/day':''}</div><div class="mo-acts"><button class="btn btn-primary" onclick="addToCart(event,'${p.id}');closeMo('prodMo')">Add to Cart</button><button class="btn btn-outline" onclick="openOffer('${p.id}')">Make Offer</button><button class="btn btn-outline" onclick="openChatFromProd('${p.id}')">Message Seller</button><button class="btn btn-outline" onclick="toggleSave(event,'${p.id}')">${savedIds.has(p.id)?'Unsave':'Save'}</button></div>`;document.getElementById('prodMo').classList.add('on');p.view_count=(p.view_count||0)+1;}
+function swMoImg(i,id){}
+function closeMo(id){document.getElementById(id)?.classList.remove('on');}
+function bgClose(e,id){if(e.target.id===id)closeMo(id);}
+
+function selType(t){selTypeVal=t;document.getElementById('typeS')?.classList.toggle('on',t==='sell');document.getElementById('typeR')?.classList.toggle('on',t==='rent');}
+function onPhotos(e){stagePics=[...e.target.files].slice(0,4);const grid=document.getElementById('thumbGrid');grid.style.display=stagePics.length?'grid':'none';grid.innerHTML='';stagePics.forEach((file,i)=>{const r=new FileReader();r.onload=()=>grid.insertAdjacentHTML('beforeend',`<div class="thumb"><img src="${r.result}"><button class="thumb-del" onclick="rmPic(${i})">×</button></div>`);r.readAsDataURL(file);});}
+function rmPic(i){stagePics.splice(i,1);document.getElementById('thumbGrid').innerHTML='';stagePics.forEach((file,j)=>{const r=new FileReader();r.onload=()=>document.getElementById('thumbGrid').insertAdjacentHTML('beforeend',`<div class="thumb"><img src="${r.result}"><button class="thumb-del" onclick="rmPic(${j})">×</button></div>`);r.readAsDataURL(file);});}
+function submitListing(){const name=document.getElementById('lName').value.trim();const price=parseFloat(document.getElementById('lPrice').value);if(!name||!price){toast('Add an item name and price first.');return;}const photos=[];const files=[...stagePics];function finish(){const p={id:'l'+Date.now(),seller_id:CU.id,name,description:document.getElementById('lDesc').value||'Demo listing created locally.',type:selTypeVal,category:document.getElementById('lCat').value,size:document.getElementById('lSize').value,price,condition:document.getElementById('lCond').value,photos,view_count:0,created_at:new Date().toISOString(),profiles:{name:CP.name,venmo_handle:CP.venmo_handle}};listings.unshift(p);['lName','lPrice','lDesc'].forEach(id=>document.getElementById(id).value='');stagePics=[];document.getElementById('thumbGrid').style.display='none';document.getElementById('thumbGrid').innerHTML='';toast('Demo listing published locally.');go('shop');}
+ if(!files.length)return finish();let done=0;files.forEach(file=>{const r=new FileReader();r.onload=()=>{photos.push(r.result);if(++done===files.length)finish();};r.readAsDataURL(file);});}
+
+function renderProfile(){document.getElementById('pName').textContent=CP.name;document.getElementById('pEmail').textContent=CU.email;document.getElementById('settEmail').textContent=CU.email;document.getElementById('settVenmo').textContent=CP.venmo_handle||'Not set';document.getElementById('pStars').innerHTML='<span class="stars"><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span></span>';let mine=listings.filter(l=>l.seller_id===CU.id);document.getElementById('pstL').textContent=mine.length;document.getElementById('pstS').textContent='3';document.getElementById('pstR').textContent=reviews.length;document.getElementById('pstEarned').textContent='$126';document.getElementById('myListingsEl').innerHTML=mine.length?mine.map(p=>`<div class="lr"><div class="lr-img">${imgHTML(p,'')}</div><div><div class="lr-name">${san(p.name)}</div><div class="lr-meta"><span class="sdot"></span>${p.view_count||0} views · ${san(p.condition)}</div></div><div class="lr-price">$${p.price}</div></div>`).join(''):'<div class="empty"><p>No listings yet.</p></div>';document.getElementById('myPurchasesEl').innerHTML=purchases.map(t=>`<div class="lr"><div class="lr-img">${imgHTML(t.listings,'')}</div><div><div class="lr-name">${san(t.listings.name)}</div><div class="lr-meta">Purchased from ${san(t.listings.profiles.name)}</div></div><button class="btn btn-outline" onclick="openRecycle('${t.listing_id}')">ReCycle</button></div>`).join('');document.getElementById('myReviewsEl').innerHTML=reviews.map(r=>`<div class="review-row"><div class="rr-top"><div class="rr-av">${r.reviewer[0]}</div><div><div class="rr-name">${san(r.reviewer)} · ${'★'.repeat(r.rating)}</div><div class="rr-date">${r.created_at}</div></div></div><div class="rr-body">${san(r.body)}</div></div>`).join('');updateProfileUI();}
+function onProfilePic(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{['navAv','pAv'].forEach(id=>document.getElementById(id).innerHTML=`<img src="${r.result}" alt="Profile">`);};r.readAsDataURL(f);}
+function openSettings(){document.getElementById('setName').value=CP.name;document.getElementById('setVenmo').value=CP.venmo_handle;const sizes=['XS','S','M','L','XL','One Size'], cats=['Tops','Bottoms','Dresses','Outerwear','Shoes','Accessories'], brands=['Vintage','Nike','Zara','H&M','Patagonia','Free People'];document.getElementById('setPrefSizes').innerHTML=sizes.map(x=>`<div class="chip ${CP.preferences.sizes.includes(x)?'sel':''}" onclick="this.classList.toggle('sel')">${x}</div>`).join('');document.getElementById('setPrefCats').innerHTML=cats.map(x=>`<div class="chip ${CP.preferences.cats.includes(x)?'sel':''}" onclick="this.classList.toggle('sel')">${x}</div>`).join('');document.getElementById('setPrefBrands').innerHTML=brands.map(x=>`<div class="chip ${CP.preferences.brands.includes(x)?'sel':''}" onclick="this.classList.toggle('sel')">${x}</div>`).join('');document.getElementById('settingsMo').classList.add('on');}
+function saveSettings(){CP.name=document.getElementById('setName').value||CP.name;CP.venmo_handle=document.getElementById('setVenmo').value||CP.venmo_handle;closeMo('settingsMo');renderProfile();toast('Settings saved for this demo session.');}
+
+function loadMessages(){const list=document.getElementById('threadList'); if(!list)return; const thread={listingId:'l1',otherId:'u2',name:'Emma R.',item:'Vintage Wrap Dress',preview:messages.at(-1)?.body||'No messages'};list.innerHTML=`<div class="ti on" onclick="openChat('${thread.listingId}','${thread.otherId}')"><div class="ti-av">ER</div><div class="ti-info"><div class="ti-name">${thread.name}</div><div class="ti-prev">${san(thread.preview)}</div></div><span class="ti-dot"></span></div>`;openChat(thread.listingId,thread.otherId,false);}
+function openChat(listingId,otherId,mark=true){activeThread={listingId,otherId};const p=listings.find(l=>l.id===listingId);document.getElementById('chatPane').innerHTML=`<div class="chat-head"><div class="ti-av">ER</div><div><div class="chat-head-name">Emma R.</div><div class="chat-head-item">${san(p?.name||'Listing')}</div></div></div><div class="chat-msgs" id="chatMsgs">${messages.filter(m=>m.listing_id===listingId).map(m=>`<div class="bub ${m.sent?'sent':'recv'}">${san(m.body)}</div><div class="msg-time ${m.sent?'r':''}">${m.created_at}</div>`).join('')}</div><div class="chat-inp"><button class="coff-btn" onclick="openOffer('${listingId}')">Offer</button><input class="cinput" id="msgInput" placeholder="Write a message…" onkeydown="if(event.key==='Enter')sendMsg('${listingId}','${otherId}')"><button class="csend" onclick="sendMsg('${listingId}','${otherId}')"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></div>`;const cm=document.getElementById('chatMsgs');cm.scrollTop=cm.scrollHeight;}
+function openChatFromProd(id){closeMo('prodMo');go('messages');openChat(id,'u2');}
+function sendMsg(listingId,otherId){const inp=document.getElementById('msgInput');if(!inp||!inp.value.trim())return;messages.push({id:'m'+Date.now(),listing_id:listingId,otherId,from:'You',body:inp.value.trim(),sent:true,created_at:'Now'});openChat(listingId,otherId);toast('Message sent in demo.');}
+function openOffer(id){offerTarget=listings.find(l=>l.id===id);document.getElementById('offerSub').textContent=offerTarget?`Make an offer for ${offerTarget.name}.`:'Make an offer.';document.getElementById('offAmt').value=offerTarget?Math.max(1,offerTarget.price-5):'';document.getElementById('offerMo').classList.add('on');}
+function submitOffer(){if(!offerTarget)return;const amt=document.getElementById('offAmt').value;messages.push({id:'offer'+Date.now(),listing_id:offerTarget.id,otherId:offerTarget.seller_id,from:'You',body:`Offer sent: $${amt} for ${offerTarget.name}`,sent:true,created_at:'Now'});closeMo('offerMo');go('messages');openChat(offerTarget.id,offerTarget.seller_id);toast('Offer added to Messages.');}
+function respOffer(id,status){toast(`Offer ${status}.`);}
+function startVenmoPayment(){venmoPayTarget=cart[0]?.listings||modalListing||listings[0];if(!venmoPayTarget)return;document.getElementById('vpHandle').textContent=venmoPayTarget.profiles?.venmo_handle||'@seller';document.getElementById('vpAmount').textContent='$'+venmoPayTarget.price;document.getElementById('vpNote').textContent='UpCycle: '+venmoPayTarget.name;document.getElementById('venmoDeepLink').href='https://venmo.com/';document.getElementById('venmoPay').classList.add('on');}
+function confirmVenmoPayment(){if(venmoPayTarget){purchases.unshift({id:'p'+Date.now(),listing_id:venmoPayTarget.id,amount:venmoPayTarget.price,created_at:new Date().toISOString(),listings:venmoPayTarget});cart=cart.filter(c=>c.listing_id!==venmoPayTarget.id);}closeMo('venmoPay');updateBadges();renderCart();toast('Payment marked confirmed in demo.');}
+function openReviewModal(id){reviewTarget=listings.find(l=>l.id===id);document.getElementById('reviewMo').classList.add('on');}
+function setStar(n){reviewStar=n;document.querySelectorAll('.star-pick').forEach((s,i)=>s.classList.toggle('on',i<n));}
+function submitReview(){reviews.unshift({seller_id:'demo-user',reviewer:'Demo Buyer',rating:reviewStar||5,body:document.getElementById('revBody').value||'Great experience!',created_at:new Date().toLocaleDateString()});closeMo('reviewMo');renderProfile();toast('Review posted.');}
+function openRecycle(id){recycleTarget=listings.find(l=>l.id===id);document.getElementById('recPreview').innerHTML=recycleTarget?`<div class="lr"><div class="lr-img">${imgHTML(recycleTarget,'')}</div><div><div class="lr-name">${san(recycleTarget.name)}</div><div class="lr-meta">Original listing details will be reused.</div></div></div>`:'';document.getElementById('recycleMo').classList.add('on');}
+function confirmRecycle(){if(!recycleTarget)return;const price=parseFloat(document.getElementById('recPrice').value)||recycleTarget.price;listings.unshift({...recycleTarget,id:'l'+Date.now(),seller_id:CU.id,price,created_at:new Date().toISOString(),profiles:{name:CP.name,venmo_handle:CP.venmo_handle}});closeMo('recycleMo');go('shop');toast('Item ReCycled as a new listing.');}
+
+function toggleChip(el,key){el.classList.toggle('sel');obPrefs[key]=obPrefs[key]||[];const v=el.textContent;if(el.classList.contains('sel')){if(!obPrefs[key].includes(v))obPrefs[key].push(v);}else obPrefs[key]=obPrefs[key].filter(x=>x!==v);}
+function obNext(n){document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('on'));document.getElementById('ob'+n)?.classList.add('on');document.querySelectorAll('.ob-dot').forEach((d,i)=>d.classList.toggle('done',i<n));}
+function addCustomBrand(e){if(e.key==='Enter'&&e.target.value.trim()){obPrefs.brands.push(e.target.value.trim());toast('Brand added.');e.target.value='';}}
+function saveOnboarding(){CP.venmo_handle=document.getElementById('obVenmo').value||CP.venmo_handle;document.getElementById('obOverlay').classList.remove('on');toast('Preferences saved.');}
+function skipOb(){document.getElementById('obOverlay').classList.remove('on');}
+
+function loadStats(){document.getElementById('sListings').textContent=listings.length;document.getElementById('sMembers').textContent='128';}
+function loadAnalytics(){const mine=listings.filter(l=>l.seller_id===CU.id);const views=mine.reduce((s,l)=>s+(l.view_count||0),0);document.getElementById('aViews').textContent=views;document.getElementById('aSales').textContent='3';document.getElementById('aEarned').textContent='$126';document.getElementById('aRating').textContent='5.0 ★';document.getElementById('aTable').innerHTML=mine.length?`<table class="found-table"><thead><tr><th>Item</th><th>Views</th><th>Status</th><th>Listed</th></tr></thead><tbody>${mine.map(l=>`<tr><td>${san(l.name)}</td><td>${l.view_count||0}</td><td><span style="color:var(--success);font-weight:600;">● Active</span></td><td>${new Date(l.created_at).toLocaleDateString()}</td></tr>`).join('')}</tbody></table>`:'<div class="empty"><p>No analytics yet.</p></div>';}
+function loadFounder(){document.getElementById('fUsers').textContent='128';document.getElementById('fListings').textContent=listings.length;document.getElementById('fTxns').textContent='37';document.getElementById('fGMV').textContent='$1,842';document.getElementById('fTxnTable').innerHTML=`<table class="found-table"><thead><tr><th>Item</th><th>Buyer</th><th>Seller</th><th>Amount</th><th>Date</th></tr></thead><tbody><tr><td>Wool Peacoat</td><td>Mali White</td><td>Claire M.</td><td>$12</td><td>7/2/2026</td></tr><tr><td>Coach Crossbody</td><td>Emma R.</td><td>Avery K.</td><td>$55</td><td>7/3/2026</td></tr></tbody></table>`;document.getElementById('fSnapTable').innerHTML=`<table class="found-table"><thead><tr><th>Date</th><th>Users</th><th>Listings</th><th>Txns</th><th>GMV</th><th>New Users</th></tr></thead><tbody><tr><td>2026-07-07</td><td>128</td><td>${listings.length}</td><td>37</td><td>$1,842</td><td>+6</td></tr><tr><td>2026-07-06</td><td>122</td><td>21</td><td>34</td><td>$1,705</td><td>+4</td></tr></tbody></table>`;}
+function snapshotNow(){toast('Demo snapshot saved.');}
+function updateBadges(){const s=savedIds.size,c=cart.reduce((t,i)=>t+(i.qty||1),0);const sb=document.getElementById('sBadge');if(sb){sb.textContent=s;sb.classList.toggle('on',s>0);}const cb=document.getElementById('cBadge');if(cb){cb.textContent=c;cb.classList.toggle('on',c>0);}const mb=document.getElementById('mBadge');if(mb){mb.textContent=1;mb.classList.add('on');}}
+function toast(msg){const el=document.getElementById('toast'), m=document.getElementById('toastMsg');if(!el||!m)return;m.textContent=msg;el.classList.add('on');clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>el.classList.remove('on'),2600);}
+</script>
+</body>
+</html>
